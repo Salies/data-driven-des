@@ -1,5 +1,5 @@
-# data-driven-des
-Studies on data-driven numerical methods for partial and ordinary differential equations.
+# data-driven-dynamics
+Studies on data-driven numerical methods for dynamical systems of partial and ordinary differential equations.
 
 [in Portuguese]
 

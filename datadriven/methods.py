@@ -5,14 +5,17 @@ class SINDy:
         self.candidates = candidates
         self.dx = dx
         # Construindo theta
+        # Cada coluna representa uma função candidata
+        # Cada linha é uma entrada de dados
         qtd_candidates = len(candidates)
         m = x.shape[0]
-        self.theta = np.zeros((m, qtd_candidates))
+        self.theta = np.empty((m, qtd_candidates))
         for i, candidate in enumerate(candidates):
             self.theta[:,i] = candidate(*x.T)
 
     def sparsify(self, l, n_iter):
         n = self.dx.shape[1]
+        # Tenta encontrar os n_candidatas * n_col_dados possíveis coeficientes que melhor se ajustam aos dados
         Xi = np.linalg.lstsq(self.theta, self.dx, rcond=None)[0]
 
         for _ in range(n_iter):
@@ -33,26 +36,16 @@ class SINDy:
                 Xi[biginds,i] = np.linalg.lstsq(self.theta[:,biginds], self.dx[:,i],rcond=None)[0]
                 
         self.xi = Xi
+        self.not_sparse_idx = [np.nonzero(self.xi[:,i])[0] for i in range(n)]
+        # Define uma função para calcular a saída baseada nos coeficientes esparsificados
+        # e nas funções candidatas equivalentes.
+        def handle_input(x):
+            res = np.zeros(x.shape)
+            for i in range(n):
+                for j in self.not_sparse_idx[i]:
+                    res[i] += self.xi[j,i] * self.candidates[j](*x.T)
+            return res
+        self.handle_input = handle_input
 
-    def model(self):
-        # A quantidade de argumentos na função retornada é a qtd de colunas de xi
-        # (ou seja, a quantidade de colunas da matriz de entrada)
-        func_array = []
-        for i in range(self.xi.shape[1]):
-            idx_not_sparse = np.nonzero(self.xi[:,i])[0]
-            coeffs = self.xi[idx_not_sparse,i]
-            funcs = [self.candidates[j] for j in idx_not_sparse]
-            print(coeffs, funcs)
-            # constói uma função que retorna a soma dos termos
-            #func = lambda x: sum([coeffs[k]*funcs[k](*x.T) for k in range(len(coeffs))])
-            #print(func(np.array([1.0,0.5,0.2])))
-            #func_array.append(lambda x: sum((coeffs[k]*funcs[k](*x.T) for k in range(len(coeffs)))))
-            def func(x):
-                return lambda x: sum((coeffs[k]*funcs[k](*x.T) for k in range(len(coeffs))))
-            func_array.append(func)
-        print(len(func_array))
-        print(func_array[2]()(np.array([1.0,0.5,0.2])))
-        # Criando uma função base
-        self.func_array = func_array
-        final_func = lambda x, t0: np.array((func_array[i](x) for i in range(len(func_array)))).T
-        return final_func
+    def model(self, x, t0):
+        return self.handle_input(x)

@@ -1,6 +1,0 @@
-# - biblioteca SINDy (facilitar uso e extensões)
-# - dúvida: qual a disposição dos dados no SINDy em um caso real
-# (a partir de medidas, o que vai no X e o que seira dX, visto que eu desconheço a dinâmica?)
-# - implementar DMD
-# - implementar aproximação funcional com LSTM
-- autoencoders

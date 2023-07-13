@@ -51,6 +51,17 @@ class SINDy:
         return self.handle_input(x)
     
 class DMD:
-    def __init__(self, X, X_shifted):
-        # implementar o dmd resumidamente aquio
-        pass
+    def __init__(self, X_base, rank):
+        Xbt = X_base.T
+        X = Xbt[:,:-1]
+        Y = Xbt[:,1:]
+        U, s, V = np.linalg.svd(X, full_matrices=False)
+        V = V.conj().T
+        U = U[:, :rank]
+        V = V[:, :rank]
+        s = s[:rank]
+        atilde = np.linalg.multi_dot([U.T.conj(), Y, V]) * np.reciprocal(s)
+        Lambda, W = np.linalg.eig(atilde)
+        Phi = U.dot(W)
+        b = np.linalg.lstsq(Phi, X.T[0], rcond=None)[0]
+        return Phi, Lambda, b

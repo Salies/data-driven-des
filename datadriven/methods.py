@@ -49,3 +49,8 @@ class SINDy:
 
     def model(self, x, t0):
         return self.handle_input(x)
+    
+class DMD:
+    def __init__(self, X, X_shifted):
+        # implementar o dmd resumidamente aquio
+        pass
